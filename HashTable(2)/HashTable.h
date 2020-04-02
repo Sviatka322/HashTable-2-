@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 
 class HashTable
 {
@@ -30,10 +29,53 @@ private:
 			return m_key;
 		}
 
+		int setKey(int key)
+		{
+			m_key = key;
+		}
+
 	};
 
+	int m_count_element;
 	int m_size;
 	Element* m_table;
+
+	bool isFull()
+	{
+		if (m_count_element == m_size)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	void enlargeTable()
+	{
+		int t_size = m_size;
+
+		Element* t_table = new Element[t_size];
+
+		for (int i = 0; i < t_size; i++)
+		{
+			t_table[i] = m_table[i];
+		}
+
+		delete[] m_table;
+
+		m_size += 10;
+
+		m_table = new Element[m_size];
+
+		for (int i = 0; i < t_size; i++)
+		{
+			m_table[i] = t_table[i];
+		}
+
+		delete[] t_table;
+	}
 
 	int hash1(int key)
 	{
@@ -42,7 +84,9 @@ private:
 
 	int hash2(int key)
 	{
-		return (1 + ((key / m_size) % m_size - 2));
+
+		return 3 - (key % 3);
+		//return (1 + ((key / m_size) % m_size - 2));
 	}
 
 	int mainHash(int key, int i)
@@ -51,8 +95,18 @@ private:
 	}
 
 public:
+	/*
+	void showSize()
+	{
+		for (int i = 0; i < m_size; i++)
+		{
+			std::cout << i << " --> " << m_table[i].getValue() << '\n';
+		}
+	}
+	*/
+
 	HashTable(int size = 10)
-		: m_size(size), m_table(new Element[m_size]) {}
+		: m_count_element(0), m_size(size), m_table(new Element[m_size]) {}
 
 	bool isKeyExist(int key)
 	{
@@ -80,6 +134,11 @@ public:
 	{
 		if (!isKeyExist(key))
 		{
+			if (isFull())
+			{
+				enlargeTable();
+			}
+
 			if (m_table[hash1(key)].getKey() != 0)
 			{
 				int h_k1 = hash1(key);
@@ -92,17 +151,19 @@ public:
 					if (m_table[main_h_k].getKey() == 0)
 					{
 						m_table[main_h_k] = Element(key, value);
+						m_count_element++;
 						break;
 					}
-					else if (i = m_size - 2)
+					else if (isFull())
 					{
-						m_size *= 2;
+						enlargeTable();
 					}
 				}
 			}
 			else
 			{
 				m_table[hash1(key)] = Element(key, value);
+				m_count_element++;
 			}
 		}
 		else
@@ -202,5 +263,10 @@ public:
 		{
 			throw - 100; // Êëþ÷ íå ³ñíóº!
 		}
+	}
+
+	~HashTable()
+	{
+		delete[] m_table;
 	}
 };
